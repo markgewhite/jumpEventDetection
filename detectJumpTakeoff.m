@@ -9,11 +9,11 @@
 %                    run detectJumpLanding first 
 %
 %       opt: options, which include:
-%          .nSmooth:            moving average time size
+%          .nSmoothTO:          moving average time size
 %          .idxMaxDivergence    maximum tolerable difference between 
 %                               idxXMax and idxDZMax in order to prefer
 %                               idxDZMax; if not then prefer idxDXMax
-%          .idxOffset:          final fixed adjustment to takeoff index 
+%          .idxOffsetTO:        final fixed adjustment to takeoff index 
 %
 %
 % Output:
@@ -42,8 +42,8 @@ for i = 1:nCases
     z = sig( 1:idxLanding(i), 3 );
     
     % smooth the signal using a moving average
-    x = movmean( x, opt.nSmooth*2+1 );
-    z = movmean( z, opt.nSmooth*2+1 );   
+    x = movmean( x, opt.nSmoothTO*2+1 );
+    z = movmean( z, opt.nSmoothTO*2+1 );   
     
     % find the rate of change
     dx = centraldiff( x );
@@ -71,7 +71,7 @@ for i = 1:nCases
     end
     
     % apply fixed bias offset
-    idxTakeoff(i) = idxTakeoff(i) + opt.idxOffset;   
+    idxTakeoff(i) = idxTakeoff(i) + opt.idxOffsetTO;   
 
 end
 

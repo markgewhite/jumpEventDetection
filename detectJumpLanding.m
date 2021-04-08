@@ -5,14 +5,14 @@
 % Parameters:
 %       signal:      cell vector array time series
 %       opt: options, which include:
-%          .nSmooth:            moving average time size
+%          .nSmoothLD:          moving average time size
 %          .freefallThreshold:  acceleration below which body is assumed
 %                               to be in freefall (i.e. < 1 g)
 %          .maxSpikeWidth:      max gap between acceleration spikes after 
 %                               landing to prevent false detections
 %          .freefallRange:      search range when the body is expect to be
 %                               in freefall
-%          .idxOffset:          final fixed adjustment to landing index 
+%          .idxOffsetLD:        final fixed adjustment to landing index 
 %
 % Output:
 %       idxLanding:  detected landing index
@@ -33,7 +33,7 @@ for i = 1:nCases
     r = sqrt( sum( signal{i}.^2, 2) );
     
     % smooth the signal using a moving average
-    r = movmean( r, opt.nSmooth*2+1 );
+    r = movmean( r, opt.nSmoothLD*2+1 );
     
     % detect the peak landing impact
     [ pkSpike, idxSpike ] = findpeaks( r, ...
@@ -74,7 +74,7 @@ for i = 1:nCases
         idxImpact(i) = idxSpike( best );
 
         % use the nearest apply fixed bias offset
-        idxLanding(i) = idxCandidate( best ) + opt.idxOffset;
+        idxLanding(i) = idxCandidate( best ) + opt.idxOffsetLD;
     
     else
         % no valid candidate identified
