@@ -4,15 +4,11 @@
 %
 % Parameters:
 %       signal:      cell vector array time series (must be triaxial)
-%       idxCrit:     vector array of indices specifying actual take-offs
-%                    to allow the algorithm's error to be computed
 %       idxLanding:  vector array of indexes specifying actual landings
+%                    to serve as a backstop;
+%                    run detectJumpLanding first 
 %
 %       opt: options, which include:
-%          .doReorientation     logical, whether to reorientate the signal
-%                               to the vertical direction at the start
-%                               assuming the participant is standing still
-%          .initOrientation     vector specifying the vertical direction
 %          .nSmooth:            moving average time size
 %          .idxMaxDivergence    maximum tolerable difference between 
 %                               idxXMax and idxDZMax in order to prefer
@@ -21,15 +17,12 @@
 %
 %
 % Output:
-%       idxTakeoff:  detected takeoff index
-%       rmse:        error with true landing index
-%       constraint:  optimiser information 
+%       idxTakeoff:  array of detected takeoffs as indices
 %
 % ************************************************************************
 
 
-function [ idxTakeoff, rmse, constraint ] = ...
-                    detectJumpTakeoff( signal, idxCrit, idxLanding, opt )
+function idxTakeoff = detectJumpTakeoff( signal, idxLanding, opt )
 
 if size( signal{1}, 2 )~=3
     error('Signal is not 3D.');
@@ -41,17 +34,9 @@ idxXMax = zeros( nCases, 1 );
 idxDXMax = zeros( nCases, 1 );
 idxDZMax = zeros( nCases, 1 );
 idxTakeoff = zeros( nCases, 1 ); % practical
-angle = zeros( nCases, 1 );
 
 for i = 1:nCases
-
-    % re-orientate
-    if opt.doReorientation
-        [ sig, angle(i) ] = rotateVecInitial( signal{i}, opt.initOrientation, 10 );
-    else
-        sig = signal{i};
-    end
-        
+       
     % work with the 'vertical' axis
     x = sig( 1:idxLanding(i), 1 );
     z = sig( 1:idxLanding(i), 3 );
@@ -86,71 +71,9 @@ for i = 1:nCases
     end
     
     % apply fixed bias offset
-    idxTakeoff(i) = idxTakeoff(i) + opt.idxOffset;
-
-    if false
-       
-        % convert indices to times
-        tSpan = ((1:length(x)) - idxCrit(i))*4;
-        tXMin = (idxXMin(i) - idxCrit(i))*4;
-        tXMax = (idxXMax(i) - idxCrit(i))*4;
-        tDXMax = (idxDXMax(i) - idxCrit(i))*4;
-        tDZMax = (idxDZMax(i) - idxCrit(i))*4;
-        tCrit = (idxCrit(i) - idxCrit(i))*4;
-        tTakeoff = (idxTakeoff(i) - idxCrit(i))*4;
-        
-        figure(1);
-        clf;
-        yyaxis left;
-        
-        pRef(1) = plot( tSpan, x, 'r-', 'LineWidth', 2, ...
-                            'DisplayName', '\it a_{x} \rm(LHS)' );
-        hold on; 
-        pRef(2) = plot( tSpan, z, 'b-', 'LineWidth', 2, ...
-                             'DisplayName', '\it a_{z} \rm(LHS)' );
-        plot( [tSpan(1),0], [0,0], 'k:', 'LineWidth', 1 );
-        
-        plot( tXMin, x(idxXMin(i)), 'ko', ...
-                            'LineWidth', 1.5, 'MarkerSize', 10 );
-        plot( tXMax, x(idxXMax(i)), 'ko', ...
-                            'LineWidth', 1.5, 'MarkerSize', 10 );
-        
-        ylim( [-2.5,2.5] );
-        ylabel( 'Acceleration (g)' );
-        
-        yyaxis right;
-        
-        pRef(3) = plot( tSpan, dx*250, 'r--', 'LineWidth', 1.0, ...
-                        'DisplayName', '\it da_{x}/dt \rm(RHS)' ); 
-        pRef(4) = plot( tSpan, dz*250, 'b--', 'LineWidth', 1.0, ...
-                        'DisplayName', '\it da_{z}/dt \rm(RHS)' ); 
-
-        plot( tDZMax, dz(idxDZMax(i))*250, 'ko', ...
-                            'LineWidth', 2.5, 'MarkerSize', 10 );
-        plot( tDXMax, dx(idxDXMax(i))*250, 'ko', ...
-                            'LineWidth', 1.5, 'MarkerSize', 10 );
-
-        ylabel( 'Differentiated Acceleration, \itda/dt \rm(g/s)' );
-                        
-        yyaxis left;        
-        pRef(5) = plot( [tCrit, tCrit], [-5, 5], 'k-', ...
-                        'LineWidth', 1.5, 'DisplayName', 'True Takeoff' );
-        pRef(6) = plot( [tTakeoff, tTakeoff], [-5, 5], 'k--', ...
-                        'LineWidth', 1, 'DisplayName', 'Est. Takeoff' );
-        
-        hold off
-        xlim( [-500, 250] );
-        xlabel( 'Time (ms)' );
-
-        legend( pRef, 'Location', 'Best' );
-        pause;
-    end
-    
+    idxTakeoff(i) = idxTakeoff(i) + opt.idxOffset;   
 
 end
-
-rmse = sqrt( sum( (idxTakeoff-idxCrit).^2, 1 )/ nCases );
-constraint = -1;
 
 end
 
