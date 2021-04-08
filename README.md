@@ -16,7 +16,7 @@ Inputs:
 - *params* : structure specifying the parameters
 
 Parameters:
-- *params.nSmoothLD* : moving average time size
+- *params.nSmoothLD* : moving average time size (half width)
 - *params.freefallThreshold* : acceleration below which body is assumed to be in freefall (i.e. < 1 g)
 - *params.maxSpikeWidth* : max gap between acceleration spikes after landing to prevent false detections
 - *params.freefallRange* : search range when the body is expect to be in freefall
@@ -38,7 +38,7 @@ Inputs:
 - *params* : structure specifying the parameters
 
 Parameters:
-- *params.nSmoothTO* : moving average time size
+- *params.nSmoothTO* : moving average time size (half width)
 - *params.idxMaxDivergence* : maximum tolerable difference between idxXMax and idxDZMax in order to prefer idxDZMax; if not then prefer idxDXMax
 - *params.maxSpikeWidth* : max gap between acceleration spikes after landing to prevent false detections
 - *params.idxOffsetTO* : final fixed adjustment to takeoff index 
